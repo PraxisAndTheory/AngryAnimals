@@ -14,12 +14,14 @@ var _dragged_vector: Vector2 = Vector2.ZERO
 var _last_dragged_vector: Vector2 = Vector2.ZERO
 var _arrow_scale_x: float = 0.0
 var _last_collision_count: int = 0
+var _reentry: bool = false
 
 @onready var debug_label = $DebugLabel
 @onready var stretch_sound = $StretchSound
 @onready var launch_sound = $LaunchSound
 @onready var kick_sound = $KickSound
 @onready var arrow = $Arrow
+@onready var timer = $Timer
 
 
 # Called when the node enters the scene tree for the first time.
@@ -119,7 +121,11 @@ func die() -> void:
 	queue_free()
 
 func _on_screen_exited():
-	die()
+	_reentry = false
+	timer.start()
+
+func _on_screen_entered():
+	_reentry = true
 
 
 func _on_input_event(viewport, event, shape_idx):
@@ -133,3 +139,10 @@ func _on_sleeping_state_changed():
 		if cb.size() > 0:
 			cb[0].die()
 		call_deferred("die")
+
+
+
+
+func _on_timer_timeout():
+	if not _reentry:
+		die()
